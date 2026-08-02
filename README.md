@@ -4,8 +4,17 @@
 
 ## 适用设备
 
-- OnePlus Ace 6T（PLR110/PLQ110, OP6113L1）
-- 其他搭载 Tencent SoterService 的 OnePlus/OPPO/realme 设备（需自行调整路径）
+| 设备品牌 | SoterService 路径 | 兼容性 |
+|---|---|---|
+| OnePlus / OPPO / realme | `/system_ext/app/SoterService` | ✅ 直接使用 |
+| 小米 / Redmi | `/system_ext/app/SoterService` 或 `/vendor/app/SoterService` | ⚠️ 需调整路径 |
+| 三星 / Google / 其他无 SOTER 设备 | 无 SoterService | ❌ 不需要此模块 |
+
+> **已测试设备**：OnePlus Ace 6T（PLR110/PLQ110, OP6113L1）
+>
+> 其他设备需自行确认 SoterService 路径，并调整 `sus_path.txt` 和 `post-fs-data.sh` 中的路径。
+>
+> **SusFS 内核**：GKI 设备（Android 12+ 高通/联发科）可使用 [WildKernels/GKI_KernelSU_SUSFS](https://github.com/WildKernels/GKI_KernelSU_SUSFS) 通用内核；非 GKI 设备需自行编译 SusFS 内核。
 
 ## 依赖
 

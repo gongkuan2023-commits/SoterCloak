@@ -20,7 +20,7 @@
 
 | 组件 | 要求 |
 |---|---|
-| KernelSU | ≥ 3.3.0 |
+| KernelSU Next | ≥ 3.3.0（[KernelSU Next](https://github.com/rifsxd/KernelSU-Next)） |
 | SusFS 内核 | ≥ v2.2.0（需刷入集成了 SusFS 的内核） |
 | Zygisk Next | 推荐（用于隐藏 Zygisk） |
 | HMA-OSS | 推荐（隐藏 SoterService 包） |

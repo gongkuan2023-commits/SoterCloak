@@ -212,6 +212,6 @@ soter_cloak/
 
 - [KernelSU Next](https://github.com/rifsxd/KernelSU-Next)
 - [SusFS](https://github.com/simonpunk/susfs4ksu)
-- [HMA-OSS](https://github.com/Admirepowered/HMA-OSS)
+- [HMA-OSS](https://github.com/frknkrc44/HMA-OSS)
 - [Chunqiu-Detector-Problem-solution](https://github.com/mingzun09/Chunqiu-Detector-Problem-solution)
 - [Tencent SOTER](https://github.com/Tencent/soter)

@@ -86,16 +86,16 @@
 
 ### 方法一：KSU Next 自动安装（推荐）
 
-1. 下载 `SoterCloak_v1.4.zip`
+1. 下载 `SoterCloak_v1.5.zip`
 2. 打开 KernelSU Next 管理器 → 模块 → 从存储安装
-3. 选择 `SoterCloak_v1.4.zip`
+3. 选择 `SoterCloak_v1.5.zip`
 4. 重启设备
 
 ### 方法二：手动安装（源文件）
 
-> ⚠️ `SoterCloak_v1.4_source.zip` 为源文件，不能直接刷入。
+> ⚠️ `SoterCloak_v1.5_source.zip` 为源文件，不能直接刷入。
 
-1. 下载并解压 `SoterCloak_v1.4_source.zip`
+1. 下载并解压 `SoterCloak_v1.5_source.zip`
 2. 将模块文件复制到 `/data/adb/modules/soter_cloak/`：
    ```bash
    su

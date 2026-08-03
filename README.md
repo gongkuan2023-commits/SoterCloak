@@ -88,7 +88,7 @@
 
 ### 手动安装
 
-1. 下载并解压 `SoterCloak_v1.4.zip`
+1. 下载并解压 `SoterCloak_v1.4_source.zip`
 2. 将模块文件复制到 `/data/adb/modules/soter_cloak/`：
    ```bash
    su

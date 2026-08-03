@@ -129,10 +129,22 @@
 
 > **关键**：vendor 分区的 soter 文件必须隐藏，否则检测器查到这些文件 → TEE 不可信
 
-### 2. SusFS WebUI 开关
+### 2. SusFS WebUI 配置（必须，否则隐藏不生效）
+
+> ⚠️ **血泪教训**：只把路径写进 `sus_path.txt` 不够！必须在 WebUI 里开启开关 + 点 `MAKE IT SUS` + **重启** 才会真正隐藏。系统更新或重启后若 TEE 又变红，先检查这里。
+
+1. 打开 **SusFS WebUI** → 找到「隐藏自定义 ROM 路径」开关 → **开启**
+2. 在「自定义 SUS 路径」中确认以上 9 个路径已填写（WebUI 直接编辑 `sus_path.txt`）
+3. 点击下方 **MAKE IT SUS** 按钮应用
+4. **必须重启**（WebUI 会提示 "Reboot to take effect"），改完不能热生效
+
+> 隐藏级别滑杆保持默认（1）即可，无需调高。
+
+### 3. SusFS WebUI 开关
 
 | 开关 | 状态 |
 |---|---|
+| 隐藏自定义 ROM 路径 | ✅ 开启（总开关，必须） |
 | 伪装 CMDLINE | ✅ 开启 |
 | 隐藏 KSU LOOP | ✅ 开启 |
 | 强制隐藏 DEX2OAT 挂载 | ✅ 开启 |
@@ -192,6 +204,7 @@
 7. `shamiko_Plus.sh` 会制造更多属性空洞，不建议使用
 8. `stop vendor.soter` 在开机早期执行会导致卡第一屏
 9. `resetprop/ksu_susfs` 不在 PATH 中，必须用绝对路径 `/data/adb/ksu/bin/`
+10. **SusFS WebUI 改完自定义路径必须点 `MAKE IT SUS` + 重启才生效**，只写 `sus_path.txt` 不点按钮不重启 = 隐藏不生效（TEE 红）
 
 ## 文件结构
 

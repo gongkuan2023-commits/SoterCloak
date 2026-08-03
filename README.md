@@ -84,21 +84,23 @@
 
 ## 安装
 
-### 方法一：一键安装脚本
+> ⚠️ **注意**：当前 Release 中的 zip 为**源文件**，非 KernelSU 模块格式，不能直接在 KernelSU 管理器中刷入。请使用以下方法手动安装。
 
-```bash
-su
-sh /sdcard/Download/soter_fix_install.sh
-```
+### 手动安装
 
-### 方法二：手动安装
-
-1. 将模块文件复制到 `/data/adb/modules/soter_cloak/`
-2. 设置脚本执行权限：
+1. 下载并解压 `SoterCloak_v1.4.zip`
+2. 将模块文件复制到 `/data/adb/modules/soter_cloak/`：
    ```bash
-   chmod +x post-fs-data.sh service.sh
+   su
+   mkdir -p /data/adb/modules/soter_cloak
+   cp module.prop post-fs-data.sh service.sh /data/adb/modules/soter_cloak/
    ```
-3. 重启设备
+3. 设置脚本执行权限：
+   ```bash
+   chmod +x /data/adb/modules/soter_cloak/post-fs-data.sh
+   chmod +x /data/adb/modules/soter_cloak/service.sh
+   ```
+4. 重启设备
 
 ## 额外配置（必须）
 

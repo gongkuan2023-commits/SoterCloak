@@ -210,7 +210,7 @@ soter_cloak/
 
 ## 致谢
 
-- [KernelSU](https://github.com/tiann/KernelSU)
+- [KernelSU Next](https://github.com/rifsxd/KernelSU-Next)
 - [SusFS](https://gitlab.com/simonpunk/susfs4ksu)
 - [HMA-OSS](https://github.com/Admirepowered/HMA-OSS)
 - [Chunqiu-Detector-Problem-solution](https://github.com/mingzun09/Chunqiu-Detector-Problem-solution)

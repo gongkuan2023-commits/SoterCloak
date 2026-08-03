@@ -148,11 +148,23 @@
 
 ### 4. 禁用冲突模块
 
-| 模块 | 原因 |
-|---|---|
-| RKF:Daemon & Ctrl_AVB & Backend | 导致 avb=2.0 |
-| TEESimulator-RS | 被检测到痕迹（需要写 key 时再启用） |
-| 其他 SoterFix 模块 | 与本模块冲突 |
+| 模块 | 兼容性 | 说明 |
+|---|---|---|
+| RKF:Daemon & Ctrl_AVB & Backend | ❌ 冲突 | 导致 avb=2.0，必须禁用 |
+| TEESimulator-RS | ⚠️ 需禁用 | 被检测到痕迹（需要写 key 时再启用） |
+| SoterFix / 其他 Soter 模块 | ❌ 冲突 | 与本模块重复操作，必须删除 |
+
+### 5. 兼容模块
+
+| 模块 | 兼容性 | 说明 |
+|---|---|---|
+| SusFS-FOR-KERNELSU | ✅ 必须配合 | 路径隐藏 + 挂载隐藏 |
+| HMA-OSS | ✅ 必须配合 | 隐藏 SoterService 包 |
+| Zygisk Next | ✅ 兼容 | 无冲突 |
+| LSPosed | ✅ 兼容 | 无冲突 |
+| Play Integrity Fork | ✅ 兼容 | 无冲突 |
+| Tricky Store | ✅ 兼容 | 无冲突 |
+| 主题类模块 | ✅ 兼容 | 无冲突 |
 
 ## 注意事项
 

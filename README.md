@@ -27,7 +27,7 @@
 
 > **SusFS 内核下载**：[WildKernels/GKI_KernelSU_SUSFS](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
 >
-> SusFS 必须通过刷入集成 SusFS 的内核来实现，不能仅靠模块。OnePlus Ace 6T 可使用 `6.6.118-android15-2026-01-AnyKernel3.zip` 内核，通过 KernelSU 管理器或 TWRP 刷入。
+> SusFS 必须通过刷入集成 SusFS 的内核来实现，不能仅靠模块。OnePlus Ace 6 可使用 `6.6.118-android15-2026-01-AnyKernel3.zip` 内核，通过 KernelSU 管理器或 TWRP 刷入。
 
 ## 检测项状态
 

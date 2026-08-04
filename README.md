@@ -10,7 +10,7 @@
 | 小米 / Redmi | `/system_ext/app/SoterService` 或 `/vendor/app/SoterService` | ⚠️ 需调整路径 |
 | 三星 / Google / 其他无 SOTER 设备 | 无 SoterService | ❌ 不需要此模块 |
 
-> **已测试设备**：OnePlus Ace 6T（PLR110/PLQ110, OP6113L1）
+> **已测试设备**：OnePlus Ace 6（PLQ110）
 >
 > 其他设备需自行确认 SoterService 路径，并调整 `sus_path.txt` 和 `post-fs-data.sh` 中的路径。
 >

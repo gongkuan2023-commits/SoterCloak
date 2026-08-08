@@ -1,13 +1,11 @@
 #!/system/bin/sh
 # ============================================================
-# SoterCloak v1.5
+# SoterCloak v1.6
 # post-fs-data.sh - 早期启动阶段属性伪造
 # ============================================================
-# 更新内容 (v1.5):
-#   - 适配 Android 16 (SDK 36) / PLQ110 16.0.5.700
-#   - 增加 androidboot.* 前缀属性处理 (Android 16 新格式)
-#   - 增加 oplusboot.* 属性清理
-#   - 增加 ro.boot.vbmeta.avb_algorithm 删除
+# 更新内容 (v1.6):
+#   - 继承 v1.5 全部 androidboot.* 属性处理
+#   - 与 v1.6 service.sh 配套（mount --bind + SusFS 路径隐藏）
 # ============================================================
 # 注意：resetprop 必须使用绝对路径（不在 PATH 中）
 # 注意：ro.boottime.vendor.soter 不在此处删除（init 会重新写入）

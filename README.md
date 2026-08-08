@@ -4,7 +4,16 @@
 
 ## 版本
 
-**当前版本：v1.5** (versionCode=6)
+**当前版本：v1.6** (versionCode=7)
+
+### v1.6 更新内容
+
+- 合并 v1.5 + 用户定制版 `service.sh`
+- **新增 `mount --bind /proc/cmdline` 兜底**：Wild 内核上 SusFS `set_cmdline_or_bootconfig` 不生效时，用 bind 直接覆盖 `/proc/cmdline`，确保 `verifiedbootstate=green` 生效
+- **新增 SusFS `add_sus_path` 循环**：在 `service.sh` 后台循环里每 30s 重新 `add_sus_path`，把 soter 相关 vendor/system 路径持续写入隐藏（不再单纯依赖 WebUI 手动填）
+- 后台循环间隔从 3s 调整为 30s（mount --bind 比纯属性删除更稳定，无需高频）
+- cmdline 伪装范围：`verifiedbootstate=orange→green`、`oplusboot.secure_type=3→1`
+- 冻结 `com.tencent.soter.soterserver`（`pm disable` + `am force-stop`）
 
 ### v1.5 更新内容
 
@@ -106,16 +115,16 @@
 
 ### 方法一：KSU Next 自动安装（推荐）
 
-1. 下载 `SoterCloak_v1.5.zip`
+1. 下载 `SoterCloak_v1.6.zip`
 2. 打开 KernelSU Next 管理器 → 模块 → 从存储安装
-3. 选择 `SoterCloak_v1.5.zip`
+3. 选择 `SoterCloak_v1.6.zip`
 4. 重启设备
 
 ### 方法二：手动安装（源文件）
 
-> ⚠️ `SoterCloak_v1.5_source.zip` 为源文件，不能直接刷入。
+> ⚠️ `SoterCloak_v1.6_source.zip` 为源文件，不能直接刷入。
 
-1. 下载并解压 `SoterCloak_v1.5_source.zip`
+1. 下载并解压 `SoterCloak_v1.6_source.zip`
 2. 将模块文件复制到 `/data/adb/modules/soter_cloak/`：
    ```bash
    su
@@ -226,14 +235,15 @@
 9. `resetprop/ksu_susfs` 不在 PATH 中，必须用绝对路径 `/data/adb/ksu/bin/`
 10. **SusFS WebUI 改完自定义路径必须点 `MAKE IT SUS` + 重启才生效**，只写 `sus_path.txt` 不点按钮不重启 = 隐藏不生效（TEE 红）
 11. **Android 16 使用 `androidboot.*` 前缀** — 部分属性从 `ro.boot.*` 迁移到 `ro.boot.androidboot.*`，需要同时处理两种格式 (v1.5)
+12. **Wild 内核 SusFS `set_cmdline_or_bootconfig` 可能不生效** — 验证 `/proc/cmdline` 是否真的被改（cat 一下），若没变，用 `mount --bind /proc/cmdline` 兜底覆盖，并在后台循环里每 30s 重新 bind 防止被 umount 还原 (v1.6)
 
 ## 文件结构
 
 ```
 soter_cloak/
-├── module.prop          # 模块信息 (v1.5, versionCode=6)
+├── module.prop          # 模块信息 (v1.6, versionCode=7)
 ├── post-fs-data.sh      # 早期启动：属性伪造
-└── service.sh           # 开机后：cmdline伪装 + 冻结SoterService + stop vendor.soter + 循环清理
+└── service.sh           # 开机后：cmdline伪装(mount --bind兜底) + 冻结SoterService + stop vendor.soter + SusFS路径隐藏循环
 ```
 
 ## 更新日志
@@ -242,6 +252,7 @@ soter_cloak/
 |---|---|---|
 | v1.4 | 2026-08-02 | 初始公开版本 |
 | v1.5 | 2026-08-08 | 适配 Android 16 / PLQ110 16.0.5.700；增加 androidboot.* 属性处理；增加 avb_algorithm/oem_unlocked/oplus.secure_type 清理；循环间隔 5s→3s |
+| v1.6 | 2026-08-08 | 合并用户定制版 service.sh；新增 mount --bind /proc/cmdline 兜底（Wild 内核 SusFS spoof 不生效）；新增 SusFS add_sus_path 循环（每 30s 重绑定路径隐藏）；循环间隔 3s→30s |
 
 ## 作者
 

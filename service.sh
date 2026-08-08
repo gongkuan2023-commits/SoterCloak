@@ -1,4 +1,14 @@
 #!/system/bin/sh
+# ============================================================
+# SoterCloak v1.6
+# service.sh - 开机完成后执行
+# ============================================================
+# 更新内容 (v1.6):
+#   - 合并 v1.5 + 用户定制版
+#   - mount --bind /proc/cmdline 兜底（Wild 内核 SusFS spoof 不生效时）
+#   - SusFS add_sus_path 循环（每 30s 重新绑定路径隐藏）
+#   - 循环间隔 3s -> 30s（mount --bind 更稳定，无需高频）
+# ============================================================
 RP=/data/adb/ksu/bin/resetprop
 SU=/data/adb/ksu/bin/ksu_susfs
 while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 2; done

@@ -1,83 +1,33 @@
 #!/system/bin/sh
-# ============================================================
-# SoterCloak v1.5
-# service.sh - 开机完成后执行
-# ============================================================
-# 更新内容 (v1.5):
-#   - 适配 Android 16 (SDK 36) / PLQ110 16.0.5.700
-#   - cmdline 伪装增加 androidboot.* 前缀处理
-#   - 增加 oplusboot.secure_type 已有值的替换
-#   - 后台循环增加 ro.boot.androidboot.* 属性清理
-#   - 循环间隔从 5s 调整为 3s (更快速响应 init 重写)
-# ============================================================
-# 执行顺序：
-#   1. 等待 sys.boot_completed = 1
-#   2. 延迟 10 秒（避免卡第一屏）
-#   3. cmdline 伪装
-#   4. 冻结 SoterService APK
-#   5. 后台循环：stop vendor.soter + 删除 init.svc 属性 + 删除 boottime 属性
-# ============================================================
-# 注意：stop vendor.soter 在开机早期执行会导致卡第一屏
-#       必须延迟到 boot_completed 后执行
-# ============================================================
-
 RP=/data/adb/ksu/bin/resetprop
 SU=/data/adb/ksu/bin/ksu_susfs
-
-# 等待开机完成
-while [ "$(getprop sys.boot_completed)" != "1" ]; do
-    sleep 2
-done
+while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 2; done
 sleep 10
-
-# ===== cmdline 伪装 =====
-cat /proc/cmdline 2>/dev/null | sed \
-    -e 's/verifiedbootstate=orange/verifiedbootstate=green/' \
-    -e 's/verifiedbootstate=yellow/verifiedbootstate=green/' \
-    -e 's/oplusboot.secure_type=3/oplusboot.secure_type=1/' \
-    -e 's/androidboot.verifiedbootstate=orange/androidboot.verifiedbootstate=green/' \
-    -e 's/androidboot.verifiedbootstate=yellow/androidboot.verifiedbootstate=green/' \
-    -e 's/androidboot.flash.locked=0/androidboot.flash.locked=1/' \
-    > /data/local/tmp/fake_cmdline.txt
+# 伪造 cmdline：orange->green, secure_type=3->1
+cat /proc/cmdline 2>/dev/null | sed -e 's/verifiedbootstate=orange/verifiedbootstate=green/' -e 's/oplusboot.secure_type=3/oplusboot.secure_type=1/' > /data/local/tmp/fake_cmdline.txt
+# SusFS spoof（改 /proc/bootconfig）
 $SU set_cmdline_or_bootconfig /data/local/tmp/fake_cmdline.txt 2>/dev/null
-
-# ===== 冻结 SoterService APK =====
+# mount --bind 覆盖 /proc/cmdline（SusFS spoof cmdline 在 Wild 内核上不生效，用 bind 兜底）
+mount --bind /data/local/tmp/fake_cmdline.txt /proc/cmdline 2>/dev/null
+# 冻结 SoterService
 pm disable com.tencent.soter.soterserver 2>/dev/null
 am force-stop com.tencent.soter.soterserver 2>/dev/null
-
-# ===== 后台循环清理 =====
-# init 会重新写入 init.svc.vendor.soter 和 ro.boottime.vendor.soter
-# 必须持续删除才能保持隐藏
+# SusFS 路径隐藏
+SUS_PATHS="/system_ext/app/SoterService /vendor/bin/hw/vendor.qti.hardware.soter-service /vendor/bin/vendor.qti.hardware.soter-provision /vendor/etc/init/vendor.qti.hardware.soter-service.rc /vendor/etc/vintf/manifest/vendor.qti.hardware.soter-service.xml /vendor/firmware_mnt/image/soter64.b00 /vendor/firmware_mnt/image/soter64.b01 /vendor/firmware_mnt/image/soter64.b02"
+for p in $SUS_PATHS; do
+    $SU add_sus_path "$p" 2>/dev/null
+done
 (
     while true; do
-        # Soter 服务停止 + 属性清理
         stop vendor.soter 2>/dev/null
         $RP --delete init.svc.vendor.soter 2>/dev/null
         $RP --delete init.svc_debug_pid.vendor.soter 2>/dev/null
         $RP --delete ro.boottime.vendor.soter 2>/dev/null
-
-        # Android 16 androidboot.* 前缀属性
-        $RP --delete ro.boot.androidboot.verifiedbootstate 2>/dev/null
-        $RP --delete ro.boot.androidboot.vbmeta.device_state 2>/dev/null
-        $RP --delete ro.boot.androidboot.flash.locked 2>/dev/null
-
-        # reboot/abnormal 属性清理
-        $RP --delete persist.sys.boot.reason.history 2>/dev/null
-        $RP --delete persist.sys.oplus.abnormalreboot_type 2>/dev/null
-        $RP --delete persist.sys.oplus.total_abnormalreboot_count 2>/dev/null
-        $RP --delete persist.sys.oplus.total_abnormalreboot_count_neras 2>/dev/null
-        $RP --delete persist.sys.system.abnormalboot 2>/dev/null
-        $RP --delete sys.oplus.abnormal_reboot_record 2>/dev/null
-        $RP --delete sys.oplus.abnormalreboot_type 2>/dev/null
-        $RP --delete sys.oplus.reboot 2>/dev/null
-        $RP --delete persist.sys.reboot.time.count 2>/dev/null
-        $RP --delete ro.boot.bootreason 2>/dev/null
-        $RP --delete ro.boot.mode 2>/dev/null
-        $RP --delete ro.bootmode 2>/dev/null
-        $RP --delete sys.boot.reason.last 2>/dev/null
-        $RP --delete vendor.oplus.boot.bootreason 2>/dev/null
-        $RP --delete vendor.oplus.boot.reason.last 2>/dev/null
-
-        sleep 3
+        # 确保 mount --bind 持续生效（被 umount 后重新 bind）
+        mount --bind /data/local/tmp/fake_cmdline.txt /proc/cmdline 2>/dev/null
+        for p in $SUS_PATHS; do
+            $SU add_sus_path "$p" 2>/dev/null
+        done
+        sleep 30
     done
 ) &

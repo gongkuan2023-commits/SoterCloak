@@ -1,7 +1,14 @@
 #!/system/bin/sh
 # ============================================================
-# SoterCloak v1.4
+# SoterCloak v1.5
 # service.sh - 开机完成后执行
+# ============================================================
+# 更新内容 (v1.5):
+#   - 适配 Android 16 (SDK 36) / PLQ110 16.0.5.700
+#   - cmdline 伪装增加 androidboot.* 前缀处理
+#   - 增加 oplusboot.secure_type 已有值的替换
+#   - 后台循环增加 ro.boot.androidboot.* 属性清理
+#   - 循环间隔从 5s 调整为 3s (更快速响应 init 重写)
 # ============================================================
 # 执行顺序：
 #   1. 等待 sys.boot_completed = 1
@@ -26,7 +33,11 @@ sleep 10
 # ===== cmdline 伪装 =====
 cat /proc/cmdline 2>/dev/null | sed \
     -e 's/verifiedbootstate=orange/verifiedbootstate=green/' \
+    -e 's/verifiedbootstate=yellow/verifiedbootstate=green/' \
     -e 's/oplusboot.secure_type=3/oplusboot.secure_type=1/' \
+    -e 's/androidboot.verifiedbootstate=orange/androidboot.verifiedbootstate=green/' \
+    -e 's/androidboot.verifiedbootstate=yellow/androidboot.verifiedbootstate=green/' \
+    -e 's/androidboot.flash.locked=0/androidboot.flash.locked=1/' \
     > /data/local/tmp/fake_cmdline.txt
 $SU set_cmdline_or_bootconfig /data/local/tmp/fake_cmdline.txt 2>/dev/null
 
@@ -39,10 +50,17 @@ am force-stop com.tencent.soter.soterserver 2>/dev/null
 # 必须持续删除才能保持隐藏
 (
     while true; do
+        # Soter 服务停止 + 属性清理
         stop vendor.soter 2>/dev/null
         $RP --delete init.svc.vendor.soter 2>/dev/null
         $RP --delete init.svc_debug_pid.vendor.soter 2>/dev/null
         $RP --delete ro.boottime.vendor.soter 2>/dev/null
+
+        # Android 16 androidboot.* 前缀属性
+        $RP --delete ro.boot.androidboot.verifiedbootstate 2>/dev/null
+        $RP --delete ro.boot.androidboot.vbmeta.device_state 2>/dev/null
+        $RP --delete ro.boot.androidboot.flash.locked 2>/dev/null
+
         # reboot/abnormal 属性清理
         $RP --delete persist.sys.boot.reason.history 2>/dev/null
         $RP --delete persist.sys.oplus.abnormalreboot_type 2>/dev/null
@@ -59,6 +77,7 @@ am force-stop com.tencent.soter.soterserver 2>/dev/null
         $RP --delete sys.boot.reason.last 2>/dev/null
         $RP --delete vendor.oplus.boot.bootreason 2>/dev/null
         $RP --delete vendor.oplus.boot.reason.last 2>/dev/null
-        sleep 5
+
+        sleep 3
     done
 ) &

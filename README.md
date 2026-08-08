@@ -2,6 +2,20 @@
 
 > KernelSU 模块 | 解决春秋检测器 (Eros 3.8) TEE 环境不可信 + avb=2.0 + Property Modified 等检测异常
 
+## 版本
+
+**当前版本：v1.5** (versionCode=6)
+
+### v1.5 更新内容
+
+- 适配 Android 16 (SDK 36) / PLQ110 16.0.5.700 固件
+- 增加 `androidboot.*` 前缀属性处理（Android 16 新格式）
+- cmdline 伪装增加 `androidboot.verifiedbootstate` 和 `androidboot.flash.locked` 处理
+- 增加 `ro.boot.vbmeta.avb_algorithm` 删除
+- 增加 `ro.boot.oem_unlocked` 和 `ro.boot.oplus.secure_type` 清理
+- 后台循环间隔从 5s 调整为 3s（更快速响应 init 重写）
+- cmdline 伪装增加 `verifiedbootstate=yellow` 处理
+
 ## 适用设备
 
 | 设备品牌 | SoterService 路径 | 兼容性 |
@@ -10,7 +24,7 @@
 | 小米 / Redmi | `/system_ext/app/SoterService` 或 `/vendor/app/SoterService` | ⚠️ 需调整路径 |
 | 三星 / Google / 其他无 SOTER 设备 | 无 SoterService | ❌ 不需要此模块 |
 
-> **已测试设备**：OnePlus Ace 6（PLQ110）
+> **已测试设备**：OnePlus Ace 6（PLQ110，16.0.5.700，Android 16，内核 6.6.89/6.6.118）
 >
 > 其他设备需自行确认 SoterService 路径，并调整 `sus_path.txt` 和 `post-fs-data.sh` 中的路径。
 >
@@ -72,9 +86,15 @@
 | `init.svc_debug_pid.vendor.soter` | 删除 |
 | `ro.boottime.vendor.soter` | 删除（**关键！**） |
 | `ro.boot.vbmeta.avb_version` | 删除 |
+| `ro.boot.vbmeta.avb_algorithm` | 删除 (v1.5 新增) |
 | `ro.boot.verifiedbootstate` | 设为 green |
 | `ro.boot.vbmeta.device_state` | 设为 locked |
 | `ro.boot.flash.locked` | 设为 1 |
+| `ro.boot.androidboot.verifiedbootstate` | 设为 green (v1.5 新增) |
+| `ro.boot.androidboot.vbmeta.device_state` | 设为 locked (v1.5 新增) |
+| `ro.boot.androidboot.flash.locked` | 设为 1 (v1.5 新增) |
+| `ro.boot.oem_unlocked` | 删除 (v1.5 新增) |
+| `ro.boot.oplus.secure_type` | 删除 (v1.5 新增) |
 
 ### `ro.boottime.vendor.soter` — 最终根因
 
@@ -205,21 +225,29 @@
 8. `stop vendor.soter` 在开机早期执行会导致卡第一屏
 9. `resetprop/ksu_susfs` 不在 PATH 中，必须用绝对路径 `/data/adb/ksu/bin/`
 10. **SusFS WebUI 改完自定义路径必须点 `MAKE IT SUS` + 重启才生效**，只写 `sus_path.txt` 不点按钮不重启 = 隐藏不生效（TEE 红）
+11. **Android 16 使用 `androidboot.*` 前缀** — 部分属性从 `ro.boot.*` 迁移到 `ro.boot.androidboot.*`，需要同时处理两种格式 (v1.5)
 
 ## 文件结构
 
 ```
 soter_cloak/
-├── module.prop          # 模块信息
+├── module.prop          # 模块信息 (v1.5, versionCode=6)
 ├── post-fs-data.sh      # 早期启动：属性伪造
 └── service.sh           # 开机后：cmdline伪装 + 冻结SoterService + stop vendor.soter + 循环清理
 ```
+
+## 更新日志
+
+| 版本 | 日期 | 变更 |
+|---|---|---|
+| v1.4 | 2026-08-02 | 初始公开版本 |
+| v1.5 | 2026-08-08 | 适配 Android 16 / PLQ110 16.0.5.700；增加 androidboot.* 属性处理；增加 avb_algorithm/oem_unlocked/oplus.secure_type 清理；循环间隔 5s→3s |
 
 ## 作者
 
 - **龔寬**
 - 型号：PLQ110
-- 日期：2026-08-02
+- 日期：2026-08-08
 
 ## 致谢
 

@@ -1,6 +1,6 @@
 id=soter_cloak
 name=SoterCloak
-version=1.5
-versionCode=6
+version=1.6
+versionCode=7
 author=龔寬
-description=SoterService冻结+vendor.soter停止+boot状态伪造+Soter属性隐藏+init.svc隐藏+boottime隐藏+reboot痕迹清理 [v1.5 适配Android16/PLQ110]
+description=SoterService冻结+vendor.soter停止+boot状态伪造(SusFS+[email protected])+Soter属性隐藏+init.svc隐藏+boottime隐藏+SusFS路径隐藏+reboot痕迹清理 [v1.6]

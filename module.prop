@@ -1,6 +1,6 @@
-id=soter_cloak
+id=soter_persist_fix
 name=SoterCloak
-version=1.6
+version=1.5-LKM
 versionCode=7
 author=龔寬
-description=SoterService冻结+vendor.soter停止+boot状态伪造(SusFS+[email protected])+Soter属性隐藏+init.svc隐藏+boottime隐藏+SusFS路径隐藏+reboot痕迹清理 [v1.6]
+description=SoterService冻结+vendor.soter停止+boot状态伪造+Soter属性隐藏+init.svc隐藏+boottime隐藏+cmdline伪装(mount--bind)|LKM模式专用(无SusFS)|兼容SukiSU Ultra

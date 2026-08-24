@@ -1,6 +1,6 @@
-id=soter_cloak
+id=soter_persist_fix
 name=SoterCloak
-version=1.6
-versionCode=7
+version=1.7
+versionCode=9
 author=龔寬
-description=SoterService冻结+vendor.soter停止+boot状态伪造(SusFS+[email protected])+Soter属性隐藏+init.svc隐藏+boottime隐藏+SusFS路径隐藏+reboot痕迹清理 [v1.6]
+description=SoterService冻结+隐藏+vendor.soter停止+boot状态伪造+TEE(cmdline green)+Soter路径SusFS自动适配+MT管理器规避+模块页面执行按钮

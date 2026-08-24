@@ -1,8 +1,10 @@
 #!/system/bin/sh
 # ============================================================
-# SoterCloak v1.6  —  OnePlus Ace 6 (PLQ110)
+# SoterCloak v1.7.1  —  OnePlus Ace 6 (PLQ110)
 # SukiSU Ultra GKI 适配：无 ksu_susfs 时自动跳过 SusFS 调用
 # 设备内核：6.6.118-android15-8-gccd9bb9aa1796 (Wild, 4k)
+# 注意：MT 管理器检测请改用 HMA-OSS 隐藏包名/路径，
+#       模块内不再对 /sdcard 任何目录做 mount --bind（会拖慢安装、遮挡文件）
 # ============================================================
 RP=/data/adb/ksu/bin/resetprop
 SU=/data/adb/ksu/bin/ksu_susfs
@@ -11,9 +13,6 @@ HAS_SUSFS=0
 
 # Soter 相关路径（SusFS 隐藏 / 备用）
 SUS_PATHS="/system_ext/app/SoterService /vendor/bin/hw/vendor.qti.hardware.soter-service /vendor/bin/vendor.qti.hardware.soter-provision /vendor/etc/init/vendor.qti.hardware.soter-service.rc /vendor/etc/vintf/manifest/vendor.qti.hardware.soter-service.xml /vendor/firmware_mnt/image/soter64.b00 /vendor/firmware_mnt/image/soter64.b01 /vendor/firmware_mnt/image/soter64.b02"
-
-# MT 管理器异常文件夹（存在才 bind 覆盖）
-MT_PATHS="/sdcard/MT2 /storage/emulated/0/MT2 /sdcard/Android/data/bin.mt.plus"
 
 apply_susfs() {
     [ "$HAS_SUSFS" != "1" ] && return 0
@@ -29,7 +28,7 @@ apply_fixes() {
     [ "$HAS_SUSFS" = "1" ] && $SU set_cmdline_or_bootconfig /data/local/tmp/fake_cmdline.txt 2>/dev/null
     mount --bind /data/local/tmp/fake_cmdline.txt /proc/cmdline 2>/dev/null
 
-    # 2. 冻结 + 隐藏 SoterService
+    # 2. 冻结 SoterService（pm hide 仅藏包、可逆、不影响安装速度）
     pm disable com.tencent.soter.soterserver 2>/dev/null
     pm hide com.tencent.soter.soterserver 2>/dev/null
     am force-stop com.tencent.soter.soterserver 2>/dev/null
@@ -39,13 +38,6 @@ apply_fixes() {
 
     # 4. SusFS 路径隐藏（仅在有 SusFS 时）
     apply_susfs
-
-    # 5. MT 管理器规避：隐藏包 + bind 覆盖异常文件夹
-    pm hide bin.mt.plus 2>/dev/null
-    mkdir -p /data/local/tmp/mt_decoy
-    for mp in $MT_PATHS; do
-        [ -d "$mp" ] && mount --bind /data/local/tmp/mt_decoy "$mp" 2>/dev/null
-    done
 }
 
 # ---------- 启动阶段 ----------
@@ -62,9 +54,6 @@ apply_fixes
         $RP --delete ro.boottime.vendor.soter 2>/dev/null
         mount --bind /data/local/tmp/fake_cmdline.txt /proc/cmdline 2>/dev/null
         apply_susfs
-        for mp in $MT_PATHS; do
-            [ -d "$mp" ] && mount --bind /data/local/tmp/mt_decoy "$mp" 2>/dev/null
-        done
         sleep 30
     done
 ) &

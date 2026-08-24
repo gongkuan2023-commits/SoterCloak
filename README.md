@@ -1,29 +1,16 @@
 # SoterCloak
 
-> KernelSU 模块 | 解决春秋检测器 (Eros 3.8) TEE 环境不可信 + avb=2.0 + Property Modified 等检测异常
+> KernelSU / SukiSU 模块 | 解决春秋检测器 TEE 环境不可信 + Bootloader 解锁 + MT 管理器 等检测异常
 
-## 版本
+## v1.7 更新
 
-**当前版本：v1.6** (versionCode=7)
-
-### v1.6 更新内容
-
-- 合并 v1.5 + 用户定制版 `service.sh`
-- **新增 `mount --bind /proc/cmdline` 兜底**：Wild 内核上 SusFS `set_cmdline_or_bootconfig` 不生效时，用 bind 直接覆盖 `/proc/cmdline`，确保 `verifiedbootstate=green` 生效
-- **新增 SusFS `add_sus_path` 循环**：在 `service.sh` 后台循环里每 30s 重新 `add_sus_path`，把 soter 相关 vendor/system 路径持续写入隐藏（不再单纯依赖 WebUI 手动填）
-- 后台循环间隔从 3s 调整为 30s（mount --bind 比纯属性删除更稳定，无需高频）
-- cmdline 伪装范围：`verifiedbootstate=orange→green`、`oplusboot.secure_type=3→1`
-- 冻结 `com.tencent.soter.soterserver`（`pm disable` + `am force-stop`）
-
-### v1.5 更新内容
-
-- 适配 Android 16 (SDK 36) / PLQ110 16.0.5.700 固件
-- 增加 `androidboot.*` 前缀属性处理（Android 16 新格式）
-- cmdline 伪装增加 `androidboot.verifiedbootstate` 和 `androidboot.flash.locked` 处理
-- 增加 `ro.boot.vbmeta.avb_algorithm` 删除
-- 增加 `ro.boot.oem_unlocked` 和 `ro.boot.oplus.secure_type` 清理
-- 后台循环间隔从 5s 调整为 3s（更快速响应 init 重写）
-- cmdline 伪装增加 `verifiedbootstate=yellow` 处理
+- ✅ **版本 1.7**（versionCode 9），相比 GitHub 已有 v1.6 增加：
+- ✅ **SusFS 自动适配**：自动检测 `ksu_susfs` 是否存在，无 SusFS（如 SukiSU Ultra GKI）时跳过 SusFS 调用，不再产生无效报错
+- ✅ **cmdline 伪装兜底**：`mount --bind` 覆盖 `/proc/cmdline`，将 `verifiedbootstate=orange` 改为 `green`（SusFS 改 bootconfig 在 Wild 内核失效时的可靠替代）
+- ✅ **MT 管理器规避**：`pm hide bin.mt.plus` + 对 `MT2` 异常文件夹做 bind 覆盖（存在才处理）
+- ✅ **增强 Soter 隐藏**：`pm hide` SoterService + 后台守护循环持续清理
+- ✅ **模块页面「执行」按钮**：新增 `action.sh`，KernelSU/SukiSU 管理器模块卡片点按钮即可立即重跑全部修复，**免重启**
+- ✅ **无 WebUI**：执行按钮走原生 `action.sh`，不依赖任何网页界面
 
 ## 适用设备
 
@@ -33,24 +20,19 @@
 | 小米 / Redmi | `/system_ext/app/SoterService` 或 `/vendor/app/SoterService` | ⚠️ 需调整路径 |
 | 三星 / Google / 其他无 SOTER 设备 | 无 SoterService | ❌ 不需要此模块 |
 
-> **已测试设备**：OnePlus Ace 6（PLQ110，16.0.5.700，Android 16，内核 6.6.89/6.6.118）
+> **已测试设备**：OnePlus Ace 6（PLQ110），内核 `6.6.118-android15-8-gccd9bb9aa1796`（Wild, 4k 页），SukiSU Ultra GKI 模式
 >
-> 其他设备需自行确认 SoterService 路径，并调整 `sus_path.txt` 和 `post-fs-data.sh` 中的路径。
->
-> **SusFS 内核**：GKI 设备（Android 12+ 高通/联发科）可使用 [WildKernels/GKI_KernelSU_SUSFS](https://github.com/WildKernels/GKI_KernelSU_SUSFS) 通用内核；非 GKI 设备需自行编译 SusFS 内核。
+> 其他设备需自行确认 SoterService 路径，并调整 `service.sh` / `action.sh` 中的路径。
 
 ## 依赖
 
 | 组件 | 要求 |
 |---|---|
-| KernelSU Next | ≥ 3.3.0（[KernelSU Next](https://github.com/rifsxd/KernelSU-Next)） |
-| SusFS 内核 | ≥ v2.2.0（需刷入集成了 SusFS 的内核） |
-| Zygisk Next | 推荐（用于隐藏 Zygisk） |
-| HMA-OSS | 推荐（隐藏 SoterService 包） |
+| KernelSU / SukiSU Ultra | 任意较新版本（管理器版本号与驱动不一致可忽略） |
+| SusFS 内核 | 可选。有则自动启用路径隐藏；无（如 SukiSU Ultra GKI）则走 `mount --bind` 兜底，功能不受影响 |
+| HMA-OSS | 推荐（隐藏 SoterService 包 / MT Manager 包，配合本模块效果更佳） |
 
-> **SusFS 内核下载**：[WildKernels/GKI_KernelSU_SUSFS](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
->
-> SusFS 必须通过刷入集成 SusFS 的内核来实现，不能仅靠模块。OnePlus Ace 6 可使用 `6.6.118-android15-2026-01-AnyKernel3.zip` 内核，通过 KernelSU 管理器或 TWRP 刷入。
+> **关于 SusFS**：本模块不强制依赖 SusFS。SukiSU Ultra GKI 模式（Wild 6.6.118）默认无 `ksu_susfs` 二进制，模块会自动跳过 SusFS 调用，核心的 cmdline green / Soter 停止 / 属性隐藏 / MT 规避全部走 `resetprop` + `mount --bind` 实现，照常生效。
 
 ## 检测项状态
 
@@ -95,15 +77,9 @@
 | `init.svc_debug_pid.vendor.soter` | 删除 |
 | `ro.boottime.vendor.soter` | 删除（**关键！**） |
 | `ro.boot.vbmeta.avb_version` | 删除 |
-| `ro.boot.vbmeta.avb_algorithm` | 删除 (v1.5 新增) |
 | `ro.boot.verifiedbootstate` | 设为 green |
 | `ro.boot.vbmeta.device_state` | 设为 locked |
 | `ro.boot.flash.locked` | 设为 1 |
-| `ro.boot.androidboot.verifiedbootstate` | 设为 green (v1.5 新增) |
-| `ro.boot.androidboot.vbmeta.device_state` | 设为 locked (v1.5 新增) |
-| `ro.boot.androidboot.flash.locked` | 设为 1 (v1.5 新增) |
-| `ro.boot.oem_unlocked` | 删除 (v1.5 新增) |
-| `ro.boot.oplus.secure_type` | 删除 (v1.5 新增) |
 
 ### `ro.boottime.vendor.soter` — 最终根因
 
@@ -113,36 +89,39 @@
 
 ## 安装
 
-### 方法一：KSU Next 自动安装（推荐）
+### 方法一：管理器自动安装（推荐）
 
-1. 下载 `SoterCloak_v1.6.zip`
-2. 打开 KernelSU Next 管理器 → 模块 → 从存储安装
-3. 选择 `SoterCloak_v1.6.zip`
+1. 下载 `SoterCloak_v1.7.zip`
+2. 打开 KernelSU / SukiSU 管理器 → 模块 → 从存储安装
+3. 选择 `SoterCloak_v1.7.zip`
 4. 重启设备
+5. （可选）模块卡片右下角出现「执行」按钮，点一下可立即重跑全部修复，无需重启
 
 ### 方法二：手动安装（源文件）
 
-> ⚠️ `SoterCloak_v1.6_source.zip` 为源文件，不能直接刷入。
+> ⚠️ `SoterCloak_v1.7_source.zip` 为源文件，不能直接刷入。
 
-1. 下载并解压 `SoterCloak_v1.6_source.zip`
-2. 将模块文件复制到 `/data/adb/modules/soter_cloak/`：
+1. 将模块文件复制到 `/data/adb/modules/soter_persist_fix/`：
    ```bash
    su
-   mkdir -p /data/adb/modules/soter_cloak
-   cp module.prop post-fs-data.sh service.sh /data/adb/modules/soter_cloak/
+   mkdir -p /data/adb/modules/soter_persist_fix
+   cp module.prop post-fs-data.sh service.sh action.sh /data/adb/modules/soter_persist_fix/
    ```
-3. 设置脚本执行权限：
+2. 设置脚本执行权限：
    ```bash
-   chmod +x /data/adb/modules/soter_cloak/post-fs-data.sh
-   chmod +x /data/adb/modules/soter_cloak/service.sh
+   chmod +x /data/adb/modules/soter_persist_fix/post-fs-data.sh
+   chmod +x /data/adb/modules/soter_persist_fix/service.sh
+   chmod +x /data/adb/modules/soter_persist_fix/action.sh
    ```
-4. 重启设备
+3. 重启设备
 
-## 额外配置（必须）
+## 额外配置（可选，本模块不依赖 WebUI）
 
-### 1. SusFS 路径隐藏
+### 1. SusFS 路径隐藏（仅当内核集成 SusFS 时）
 
-编辑 `/data/adb/susfs4ksu/sus_path.txt`：
+> 本模块**不强制依赖 SusFS**，也**不使用 WebUI**。SukiSU Ultra GKI（Wild 6.6.118）默认无 `ksu_susfs`，模块会自动跳过 SusFS 调用，核心功能（cmdline green / Soter 停止 / 属性隐藏 / MT 规避）全部通过 `resetprop` + `mount --bind` 实现，照常生效。
+>
+> 若你的内核集成了 SusFS，可编辑 `/data/adb/susfs4ksu/sus_path.txt` 加入以下路径（需自行用对应 SusFS 工具启用，本模块不处理）：
 
 ```
 /system_ext/app/SoterService
@@ -156,29 +135,9 @@
 /vendor/firmware_mnt/image/soter64.b02
 ```
 
-> **关键**：vendor 分区的 soter 文件必须隐藏，否则检测器查到这些文件 → TEE 不可信
+> **关键**：vendor 分区的 soter 文件必须隐藏，否则检测器查到这些文件 → TEE 不可信。无 SusFS 时，本模块通过 `pm hide` + `stop vendor.soter` 达到等效效果。
 
-### 2. SusFS WebUI 配置（必须，否则隐藏不生效）
-
-> ⚠️ **血泪教训**：只把路径写进 `sus_path.txt` 不够！必须在 WebUI 里开启开关 + 点 `MAKE IT SUS` + **重启** 才会真正隐藏。系统更新或重启后若 TEE 又变红，先检查这里。
-
-1. 打开 **SusFS WebUI** → 找到「隐藏自定义 ROM 路径」开关 → **开启**
-2. 在「自定义 SUS 路径」中确认以上 9 个路径已填写（WebUI 直接编辑 `sus_path.txt`）
-3. 点击下方 **MAKE IT SUS** 按钮应用
-4. **必须重启**（WebUI 会提示 "Reboot to take effect"），改完不能热生效
-
-> 隐藏级别滑杆保持默认（1）即可，无需调高。
-
-### 3. SusFS WebUI 开关
-
-| 开关 | 状态 |
-|---|---|
-| 隐藏自定义 ROM 路径 | ✅ 开启（总开关，必须） |
-| 伪装 CMDLINE | ✅ 开启 |
-| 隐藏 KSU LOOP | ✅ 开启 |
-| 强制隐藏 DEX2OAT 挂载 | ✅ 开启 |
-
-### 3. HMA-OSS 配置
+### 2. HMA-OSS 配置
 
 隐藏目标应用：
 - `com.chunqiunativecheck`（春秋检测器）
@@ -187,7 +146,7 @@
 隐藏内容：
 - `com.tencent.soter.soterserver`
 
-### 4. 禁用冲突模块
+### 3. 禁用冲突模块
 
 | 模块 | 兼容性 | 说明 |
 |---|---|---|
@@ -195,12 +154,11 @@
 | TEESimulator-RS | ⚠️ 需禁用 | 被检测到痕迹（需要写 key 时再启用） |
 | SoterFix / 其他 Soter 模块 | ❌ 冲突 | 与本模块重复操作，必须删除 |
 
-### 5. 兼容模块
+### 4. 兼容模块
 
 | 模块 | 兼容性 | 说明 |
 |---|---|---|
-| SusFS-FOR-KERNELSU | ✅ 必须配合 | 路径隐藏 + 挂载隐藏 |
-| HMA-OSS | ✅ 必须配合 | 隐藏 SoterService 包 |
+| HMA-OSS | ✅ 推荐 | 隐藏 SoterService / MT 包，配合本模块效果更佳 |
 | Zygisk Next | ✅ 兼容 | 无冲突 |
 | LSPosed | ✅ 兼容 | 无冲突 |
 | Play Integrity Fork | ✅ 兼容 | 无冲突 |
@@ -233,32 +191,22 @@
 7. `shamiko_Plus.sh` 会制造更多属性空洞，不建议使用
 8. `stop vendor.soter` 在开机早期执行会导致卡第一屏
 9. `resetprop/ksu_susfs` 不在 PATH 中，必须用绝对路径 `/data/adb/ksu/bin/`
-10. **SusFS WebUI 改完自定义路径必须点 `MAKE IT SUS` + 重启才生效**，只写 `sus_path.txt` 不点按钮不重启 = 隐藏不生效（TEE 红）
-11. **Android 16 使用 `androidboot.*` 前缀** — 部分属性从 `ro.boot.*` 迁移到 `ro.boot.androidboot.*`，需要同时处理两种格式 (v1.5)
-12. **Wild 内核 SusFS `set_cmdline_or_bootconfig` 可能不生效** — 验证 `/proc/cmdline` 是否真的被改（cat 一下），若没变，用 `mount --bind /proc/cmdline` 兜底覆盖，并在后台循环里每 30s 重新 bind 防止被 umount 还原 (v1.6)
+10. 本模块**无 WebUI**，执行按钮走 KernelSU 原生 `action.sh`，点一下即重跑全部修复，免重启
 
 ## 文件结构
 
 ```
-soter_cloak/
-├── module.prop          # 模块信息 (v1.6, versionCode=7)
+soter_persist_fix/
+├── module.prop          # 模块信息（id=soter_persist_fix, version=1.6）
 ├── post-fs-data.sh      # 早期启动：属性伪造
-└── service.sh           # 开机后：cmdline伪装(mount --bind兜底) + 冻结SoterService + stop vendor.soter + SusFS路径隐藏循环
+├── service.sh           # 开机后：cmdline伪装 + 冻结/隐藏SoterService + stop vendor.soter + MT规避 + 循环清理
+└── action.sh            # 模块页面「执行」按钮：立即重跑全部修复（免重启）
 ```
-
-## 更新日志
-
-| 版本 | 日期 | 变更 |
-|---|---|---|
-| v1.4 | 2026-08-02 | 初始公开版本 |
-| v1.5 | 2026-08-08 | 适配 Android 16 / PLQ110 16.0.5.700；增加 androidboot.* 属性处理；增加 avb_algorithm/oem_unlocked/oplus.secure_type 清理；循环间隔 5s→3s |
-| v1.6 | 2026-08-08 | 合并用户定制版 service.sh；新增 mount --bind /proc/cmdline 兜底（Wild 内核 SusFS spoof 不生效）；新增 SusFS add_sus_path 循环（每 30s 重绑定路径隐藏）；循环间隔 3s→30s |
 
 ## 作者
 
 - **龔寬**
-- 型号：PLQ110
-- 日期：2026-08-08
+- 日期：2026-08-24
 
 ## 致谢
 

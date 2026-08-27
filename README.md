@@ -80,15 +80,15 @@
 
 ### 方法一：管理器自动安装（推荐）
 
-1. 下载 `SoterCloak_v1.7.zip`
+1. 下载 `SoterCloak_v1.6.zip`
 2. 打开 KernelSU / SukiSU 管理器 → 模块 → 从存储安装
-3. 选择 `SoterCloak_v1.7.zip`
+3. 选择 `SoterCloak_v1.6.zip`
 4. 重启设备
 5. （可选）模块卡片右下角出现「执行」按钮，点一下可立即重跑全部修复，无需重启
 
 ### 方法二：手动安装（源文件）
 
-> ⚠️ `SoterCloak_v1.7_source.zip` 为源文件，不能直接刷入。
+> ⚠️ `SoterCloak_v1.6_source.zip` 为源文件，不能直接刷入。
 
 1. 将模块文件复制到 `/data/adb/modules/soter_persist_fix/`：
    ```bash

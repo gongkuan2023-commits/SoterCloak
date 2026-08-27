@@ -2,21 +2,6 @@
 
 > KernelSU / SukiSU 模块 | 解决春秋检测器 TEE 环境不可信 + Bootloader 解锁 + MT 管理器 等检测异常
 
-## v1.7.1 更新（紧急修复）
-
-- ⚠️ **移除 MT 文件夹的 `mount --bind`**：v1.7 对 `/sdcard/MT2`、`/sdcard/Android/data/bin.mt.plus` 等做 bind 遮挡，会导致（1）文件夹内容看似消失、（2）后台循环每 30s re-bind 拖慢模拟存储层、安装 APP 变慢。已彻底移除。
-- ✅ **MT 管理器检测改为 HMA-OSS**：请在 HMA-OSS 中隐藏包名 `bin.mt.plus` 及对应路径，不要再用模块 bind 用户文件夹。
-- ✅ 保留 `pm hide bin.mt.plus`（仅藏包、可逆、不影响安装速度）。
-
-## v1.7 更新
-
-- ✅ **版本 1.7**（versionCode 9），相比 GitHub 已有 v1.6 增加：
-- ✅ **SusFS 自动适配**：自动检测 `ksu_susfs` 是否存在，无 SusFS（如 SukiSU Ultra GKI）时跳过 SusFS 调用，不再产生无效报错
-- ✅ **cmdline 伪装兜底**：`mount --bind` 覆盖 `/proc/cmdline`，将 `verifiedbootstate=orange` 改为 `green`（SusFS 改 bootconfig 在 Wild 内核失效时的可靠替代）
-- ✅ **增强 Soter 隐藏**：`pm hide` SoterService + 后台守护循环持续清理
-- ✅ **模块页面「执行」按钮**：新增 `action.sh`，KernelSU/SukiSU 管理器模块卡片点按钮即可立即重跑全部修复，**免重启**
-- ✅ **无 WebUI**：执行按钮走原生 `action.sh`，不依赖任何网页界面
-
 ## 适用设备
 
 | 设备品牌 | SoterService 路径 | 兼容性 |

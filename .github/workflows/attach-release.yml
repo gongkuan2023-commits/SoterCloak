@@ -11,4 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: gh release upload "${{ inputs.tag }}" SoterCloak_v1.7.2.zip SoterCloak_v1.7.2_source.zip --repo gongkuan2023-commits/SoterCloak --clobber
+      - name: Recreate release and upload
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: gongkuan2023-commits/SoterCloak
+        run: |
+          TAG="${{ inputs.tag }}"
+          REL_ID=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/releases/tags/$TAG" | python3 -c "import sys,json;print(json.load(sys.stdin).get('id',''))")
+          echo "old release id=$REL_ID"
+          curl -s -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/releases/$REL_ID"
+          curl -s -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/git/refs/tags/$TAG"
+          NEWID=$(curl -s -X POST -H "Authorization: Bearer $GITHUB_TOKEN" -H "Content-Type: application/json" -d "{\"tag_name\":\"$TAG\",\"name\":\"SoterCloak $TAG\",\"body\":\"移除MT文件夹bind根治卡死；MT检测转HMA-OSS；SoterService冻结隐藏+vendor.soter停止+cmdline green+TEE+SusFS适配+执行按钮\",\"draft\":false}" "https://api.github.com/repos/$REPO/releases" | python3 -c "import sys,json;print(json.load(sys.stdin).get('id',''))")
+          echo "new release id=$NEWID"
+          for f in SoterCloak_v1.7.2.zip SoterCloak_v1.7.2_source.zip; do
+            curl -s -X POST -H "Authorization: Bearer $GITHUB_TOKEN" -H "Content-Type: application/zip" --data-binary @"$f" "https://uploads.github.com/repos/$REPO/releases/$NEWID/assets?name=$f"
+            echo "uploaded $f"
+          done

@@ -1,24 +1,14 @@
-name: Attach v1.7.1 release assets
-
+name: Attach v1.6 release assets
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Target release tag'
-        required: true
-        default: 'v1.7.1'
-
+        default: 'v1.6'
 permissions:
   contents: write
-
 jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Upload release assets
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload "${{ inputs.tag }}" SoterCloak_v1.7.1.zip SoterCloak_v1.7.1_source.zip --repo gongkuan2023-commits/SoterCloak --clobber
+      - uses: actions/checkout@v4
+      - run: gh release upload "${{ inputs.tag }}" SoterCloak_v1.6.zip SoterCloak_v1.6_source.zip --repo gongkuan2023-commits/SoterCloak --clobber

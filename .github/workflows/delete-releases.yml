@@ -1,0 +1,19 @@
+name: Delete 1.7.x releases
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  del:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete releases and tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: gongkuan2023-commits/SoterCloak
+        run: |
+          for TAG in v1.7 v1.7.1 v1.7.2; do
+            REL_ID=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/releases/tags/$TAG" | python3 -c "import sys,json;print(json.load(sys.stdin).get('id',''))")
+            if [ -n "$REL_ID" ]; then curl -s -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/releases/$REL_ID"; echo "deleted release $TAG ($REL_ID)"; fi
+            curl -s -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/git/refs/tags/$TAG"; echo "deleted tag $TAG"
+          done

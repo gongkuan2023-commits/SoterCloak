@@ -1,9 +1,9 @@
-name: Attach v1.6 release assets
+name: Attach v1.7.2 release assets
 on:
   workflow_dispatch:
     inputs:
       tag:
-        default: 'v1.6'
+        default: 'v1.7.2'
 permissions:
   contents: write
 jobs:
@@ -11,4 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: gh release upload "${{ inputs.tag }}" SoterCloak_v1.6.zip SoterCloak_v1.6_source.zip --repo gongkuan2023-commits/SoterCloak --clobber
+      - name: Upload assets via REST API
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: gongkuan2023-commits/SoterCloak
+        run: |
+          TAG="${{ inputs.tag }}"
+          REL_ID=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/releases/tags/$TAG" | python3 -c "import sys,json;d=json.load(sys.stdin);print(d.get('id',''))")
+          echo "release id=$REL_ID"
+          for f in SoterCloak_v1.7.2.zip SoterCloak_v1.7.2_source.zip; do
+            curl -s -X POST -H "Authorization: Bearer $GITHUB_TOKEN" -H "Content-Type: application/zip" --data-binary @"$f" "https://uploads.github.com/repos/$REPO/releases/$REL_ID/assets?name=$f"
+            echo "uploaded $f"
+          done

@@ -45,13 +45,12 @@
 |---|---|---|
 | ✅ TEE 环境不可信 | 已解决 | SoterService 冻结 + vendor.soter 停止 + 属性隐藏 + vendor soter 文件隐藏 |
 | ✅ avb=2.0 | 已解决 | resetprop 删除 avb_version |
-| ✅ Found ksu/免解设备 | 已解决 | SusFS 隐藏 `/system/bin/su` |
+| ⚠️ Found ksu/免解设备 | 部分解决 | SusFS 隐藏文件/进程，但 GKI 模式内核侧信道无法隐藏 |
 | ✅ 挂载间隙 | 已解决 | SusFS 隐藏 KSU LOOP + DEX2OAT |
 | ✅ Bootloader 解锁 | 已解决 | cmdline 伪装 |
 | ✅ 启动状态异常 | 已解决 | cmdline 伪装 |
 | ✅ 发现异常模块 | 已解决 | HMA-OSS + SusFS 挂载隐藏 |
 | ✅ Property Modified | 已解决 | 重启后 init 自动修复空洞 |
-| ⚠️ Found ksu（侧信道） | 部分解决 | SusFS 隐藏文件/进程，但 GKI 模式内核侧信道无法隐藏 |
 
 > **注**：Found ksu 的侧信道检测需要切换到 LKM 模式才能完全解决，当前 GKI 模式下无法通过软件隐藏。
 
